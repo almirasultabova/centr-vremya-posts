@@ -10,8 +10,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .topbar{background:#740298;color:#fff;padding:14px 16px;border-radius:14px;margin-bottom:10px;text-align:center}
 .topbar h1{font-size:17px;font-weight:700}
 .topbar p{font-size:11px;opacity:.75;margin-top:3px}
-.tabs{display:flex;gap:6px;margin-bottom:10px;overflow-x:auto;padding-bottom:2px}
-.tab{flex:1;min-width:100px;padding:10px 8px;background:#fff;border-radius:10px;text-align:center;border:2px solid transparent;font-size:13px;font-weight:600;cursor:pointer;color:#555;transition:all .15s;white-space:nowrap}
+.tabs{display:flex;gap:6px;margin-bottom:10px}
+.tab{flex:1;padding:10px 8px;background:#fff;border-radius:10px;text-align:center;border:2px solid transparent;font-size:13px;font-weight:600;cursor:pointer;color:#555;transition:all .15s}
 .tab:hover{border-color:#c0a0e0;color:#740298}
 .tab.active{border-color:#740298;color:#740298;background:#f8f0ff}
 .tab-sub{font-size:10px;font-weight:400;color:#aaa;display:block;margin-top:2px}
@@ -26,7 +26,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .stat.s-fix.active-filter{box-shadow:0 0 0 2.5px #ff9800}
 .stat.s-left.active-filter{box-shadow:0 0 0 2.5px #740298}
 .filters{display:flex;gap:6px;margin-bottom:12px}
-.f-btn{flex:1;padding:9px 4px;border:2px solid transparent;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;background:#fff;color:#555;transition:all .15s}
+.f-btn{flex:1;padding:9px 4px;border:2px solid transparent;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;background:#fff;color:#555;transition:all .15s}
 .f-btn.active{border-color:#740298;color:#740298;background:#f8f0ff}
 .copy-all-btn{display:none;width:100%;padding:12px;background:#e65c00;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:12px}
 .card{background:#fff;border-radius:14px;margin-bottom:14px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.07);border:2px solid transparent;transition:border-color .2s}
@@ -44,7 +44,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .btn-ok{background:#e8f5e9;color:#2d7a2d}.btn-fix{background:#fff3e0;color:#c0610a}.btn-copy{background:#f3ecf8;color:#740298}
 .card.ok .btn-ok{background:#4caf50;color:#fff}.card.fix .btn-fix{background:#ff9800;color:#fff}
 .comment-wrap{padding:0 14px 12px}
-.comment-wrap textarea{width:100%;border:1.5px solid #e0d8d0;border-radius:8px;padding:8px 10px;font-size:13px;resize:vertical;min-height:60px;color:#1f1d1a;background:#faf8f4}
+.comment-wrap textarea{width:100%;border:1.5px solid #e0d8d0;border-radius:8px;padding:8px 10px;font-size:13px;resize:vertical;min-height:60px;background:#faf8f4}
 .comment-wrap textarea:focus{outline:none;border-color:#740298}
 .save-btn{display:block;width:100%;padding:8px;background:#740298;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;margin-top:6px}
 .save-btn.saved{background:#4caf50}
@@ -52,13 +52,34 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .toast.show{opacity:1}
 .loading{text-align:center;padding:40px;color:#aaa;font-size:14px}
 .empty-msg{text-align:center;color:#aaa;padding:32px;font-size:14px;display:none}
+
+.setup-overlay{position:fixed;inset:0;background:#f3ece0;z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px}
+.setup-box{background:#fff;border-radius:18px;padding:28px 24px;max-width:360px;width:100%;box-shadow:0 4px 24px rgba(0,0,0,.12)}
+.setup-box h2{font-size:18px;font-weight:700;color:#740298;margin-bottom:8px}
+.setup-box p{font-size:13px;color:#666;line-height:1.5;margin-bottom:18px}
+.setup-box input{width:100%;border:1.5px solid #e0d8d0;border-radius:8px;padding:10px 12px;font-size:13px;margin-bottom:12px}
+.setup-box input:focus{outline:none;border-color:#740298}
+.setup-box button{width:100%;padding:12px;background:#740298;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer}
+.setup-box .hint{font-size:11px;color:#aaa;margin-top:10px;text-align:center}
+
 </style>
 </head>
 <body>
+
+<div class="setup-overlay" id="setup-overlay" style="display:none">
+  <div class="setup-box">
+    <h2>Добро пожаловать</h2>
+    <p>Для сохранения статусов постов нужен GitHub токен. Вводится один раз — запомнится в браузере.</p>
+    <input type="password" id="token-input" placeholder="Вставь токен сюда" />
+    <button onclick="saveToken()">Сохранить и войти</button>
+    <div class="hint">Токен можно получить у агента ВРЕМЯ</div>
+  </div>
+</div>
+
 <div class="toast" id="toast">Сохранено ✓</div>
 <div class="topbar">
   <h1>Согласование постов · @vremya_psy</h1>
-  <p>Отмечай статус — сохраняется на сервере</p>
+  <p>Отмечай статус — сохраняется автоматически</p>
 </div>
 <div class="tabs" id="tabs"></div>
 <div class="stats">
@@ -77,256 +98,242 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div class="empty-msg" id="empty-msg">Нет постов с таким статусом</div>
 
 <script>
+var GH_TOKEN = localStorage.getItem('vp_gh_token') || '';
+var REPO = 'almirasultabova/centr-vremya-posts';
+var BRANCH = 'main';
+
 var MONTHS = {
-  'may':  { label: 'Май 2026',  sub: '21–31 мая',    file: 'posts/may.md' },
-  'june': { label: 'Июнь 2026', sub: 'весь месяц',   file: 'posts/june.md' }
+  'may':  { label: 'Май 2026',  sub: '21–31 мая'  },
+  'june': { label: 'Июнь 2026', sub: 'весь месяц' }
 };
 var MONTHS_ORDER = ['may','june'];
 var currentMonth = 'june';
 var currentFilter = 'all';
 var postsData = [];
 var reviewsData = {};
+var reviewsSha = {};
 var toastTimer;
+var saveQueue = {};
+
+// ── GitHub API ────────────────────────────────────────────
+function ghGet(path) {
+  return fetch('https://api.github.com/repos/'+REPO+'/contents/'+path+'?ref='+BRANCH+'&t='+Date.now(), {
+    headers: { 'Authorization': 'token '+GH_TOKEN, 'Accept': 'application/vnd.github.v3+json' }
+  }).then(function(r){ return r.ok ? r.json() : null });
+}
+
+function ghPut(path, contentStr, sha) {
+  var body = { message: 'update '+path, content: btoa(unescape(encodeURIComponent(contentStr))), branch: BRANCH };
+  if (sha) body.sha = sha;
+  return fetch('https://api.github.com/repos/'+REPO+'/contents/'+path, {
+    method: 'PUT',
+    headers: { 'Authorization': 'token '+GH_TOKEN, 'Content-Type': 'application/json', 'Accept': 'application/vnd.github.v3+json' },
+    body: JSON.stringify(body)
+  }).then(function(r){ return r.json() });
+}
+
+function loadReviews(month) {
+  return ghGet('reviews/'+month+'.json').then(function(d) {
+    if (!d) return {};
+    reviewsSha[month] = d.sha;
+    return JSON.parse(decodeURIComponent(escape(atob(d.content.replace(/\n/g,'')))));
+  });
+}
+
+function saveReviews(month) {
+  var content = JSON.stringify(reviewsData, null, 2);
+  ghPut('reviews/'+month+'.json', content, reviewsSha[month]).then(function(r) {
+    if (r && r.content) reviewsSha[month] = r.content.sha;
+  });
+}
 
 // ── Парсинг markdown ──────────────────────────────────────
 function parseMd(text) {
-  var posts = [];
-  var current = null;
+  var posts = [], current = null;
   text.split('\n').forEach(function(line) {
     var m = line.match(/^## (.+)/);
     if (m) {
       if (current) posts.push(current);
       var parts = m[1].split('|').map(function(s){return s.trim()});
-      current = { date: parts[0]||'', time: parts[1]||'', tag: parts[2]||'', bodyLines: [], status: '', comment: '', updated: '' };
-    } else if (current) {
-      current.bodyLines.push(line);
-    }
+      current = { date:parts[0]||'', time:parts[1]||'', tag:parts[2]||'', lines:[], status:'', comment:'', updated:'' };
+    } else if (current) { current.lines.push(line); }
   });
   if (current) posts.push(current);
-  posts.forEach(function(p) {
-    p.body = p.bodyLines.join('\n').replace(/\n*---\s*$/, '').trim();
-    delete p.bodyLines;
-  });
+  posts.forEach(function(p){ p.body = p.lines.join('\n').replace(/\n*---\s*$/, '').trim(); delete p.lines; });
   return posts;
 }
 
-function fmtHtml(text) {
-  text = text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  text = text.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
-  text = text.replace(/_(.+?)_/g,'<em>$1</em>');
-  text = text.replace(/\[(.+?)\]\((https?:\/\/[^)]+)\)/g,'<a href="$2" target="_blank">$1</a>');
-  text = text.replace(/\n/g,'<br>');
-  return text;
+function fmtHtml(t) {
+  t = t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  t = t.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
+  t = t.replace(/_(.+?)_/g,'<em>$1</em>');
+  t = t.replace(/\[(.+?)\]\((https?:\/\/[^)]+)\)/g,'<a href="$2" target="_blank">$1</a>');
+  return t.replace(/\n/g,'<br>');
 }
 
-// ── API ───────────────────────────────────────────────────
-var BASE = window.location.origin;
+function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
-function loadReviews(month, cb) {
-  fetch(BASE + '/api/reviews?month=' + month)
-    .then(function(r){return r.json()})
-    .then(cb)
-    .catch(function(){cb({})});
-}
-
-function saveReview(month, idx, patch) {
-  var body = Object.assign({ month: month, idx: idx }, patch);
-  fetch(BASE + '/api/reviews', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body)
-  }).then(function(){showToast()});
-}
-
-function loadPostsMd(month, cb) {
-  var url = BASE + '/' + MONTHS[month].file + '?t=' + Date.now();
-  fetch(url).then(function(r){return r.text()}).then(cb).catch(function(){cb('')});
-}
-
-// ── Tabs ─────────────────────────────────────────────────
+// ── Tabs ──────────────────────────────────────────────────
 function renderTabs() {
-  var html = '';
-  MONTHS_ORDER.forEach(function(mk) {
-    var mc = MONTHS[mk];
-    var rev = mk === currentMonth ? reviewsData : {};
-    var active = mk === currentMonth ? ' active' : '';
-    html += '<div class="tab'+active+'" onclick="switchMonth(\''+mk+'\')">'
-          + mc.label
-          + '<span class="tab-sub">'+mc.sub+'</span>'
-          + '</div>';
-  });
-  document.getElementById('tabs').innerHTML = html;
+  document.getElementById('tabs').innerHTML = MONTHS_ORDER.map(function(mk) {
+    var mc = MONTHS[mk], active = mk===currentMonth?' active':'';
+    return '<div class="tab'+active+'" onclick="switchMonth(\''+mk+'\')">'+mc.label+'<span class="tab-sub">'+mc.sub+'</span></div>';
+  }).join('');
 }
 
-// ── Render ────────────────────────────────────────────────
+// ── Render cards ──────────────────────────────────────────
 function applyReviews() {
-  postsData.forEach(function(p, i) {
-    var r = reviewsData[String(i)] || {};
-    p.status = r.status || '';
-    p.comment = r.comment || '';
-    p.updated = r.updated || '';
+  postsData.forEach(function(p,i) {
+    var r = reviewsData[String(i)]||{};
+    p.status=r.status||''; p.comment=r.comment||''; p.updated=r.updated||'';
   });
 }
 
 function renderCards() {
   applyReviews();
-  var html = '';
-  postsData.forEach(function(p, i) {
-    var cls = p.status || '';
-    var badge = p.status === 'ok' ? '✅' : p.status === 'fix' ? '✏️' : '';
-    var upd = p.updated ? '<span class="updated">'+p.updated+'</span>' : '';
-    html += '<div class="card '+cls+'" id="card'+i+'" data-status="'+cls+'">'
-      + '<div class="card-head">'
-      + '<span class="status-badge" id="badge'+i+'">'+badge+'</span>'
-      + '<span class="date">'+fmtHtml(p.date)+'</span>'
-      + '<span class="time">'+fmtHtml(p.time)+'</span>'
-      + '<span class="tag">'+fmtHtml(p.tag)+upd+'</span>'
-      + '</div>'
-      + '<div class="card-body" id="body'+i+'">'+fmtHtml(p.body)+'</div>'
-      + '<div class="card-actions">'
-      + '<button class="btn-ok" onclick="setStatus('+i+',\'ok\')">✅ Всё ок</button>'
-      + '<button class="btn-fix" onclick="setStatus('+i+',\'fix\')">✏️ Нужны правки</button>'
-      + '<button class="btn-copy" onclick="copyPost('+i+')">📋 Копировать</button>'
-      + '</div>'
-      + '<div class="comment-wrap">'
-      + '<textarea id="ta'+i+'" placeholder="Напиши комментарий — что изменить...">'+escHtml(p.comment)+'</textarea>'
-      + '<button class="save-btn" id="savebtn'+i+'" onclick="saveComment('+i+')">💾 Сохранить</button>'
-      + '</div>'
-      + '</div>';
-  });
-  document.getElementById('posts').innerHTML = html;
-  updateStats();
-  applyFilter();
-}
-
-function escHtml(s) {
-  return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  document.getElementById('posts').innerHTML = postsData.map(function(p,i) {
+    var cls=p.status||'', badge=p.status==='ok'?'✅':p.status==='fix'?'✏️':'';
+    var upd=p.updated?'<span class="updated">'+p.updated+'</span>':'';
+    return '<div class="card '+cls+'" id="card'+i+'" data-status="'+cls+'">'
+      +'<div class="card-head">'
+      +'<span class="status-badge" id="badge'+i+'">'+badge+'</span>'
+      +'<span class="date">'+fmtHtml(p.date)+'</span>'
+      +'<span class="time">'+fmtHtml(p.time)+'</span>'
+      +'<span class="tag">'+fmtHtml(p.tag)+upd+'</span>'
+      +'</div>'
+      +'<div class="card-body" id="body'+i+'">'+fmtHtml(p.body)+'</div>'
+      +'<div class="card-actions">'
+      +'<button class="btn-ok" onclick="setStatus('+i+',\'ok\')">✅ Всё ок</button>'
+      +'<button class="btn-fix" onclick="setStatus('+i+',\'fix\')">✏️ Нужны правки</button>'
+      +'<button class="btn-copy" onclick="copyPost('+i+')">📋 Копировать</button>'
+      +'</div>'
+      +'<div class="comment-wrap">'
+      +'<textarea id="ta'+i+'" placeholder="Напиши комментарий — что изменить...">'+esc(p.comment)+'</textarea>'
+      +'<button class="save-btn" id="savebtn'+i+'" onclick="saveComment('+i+')">💾 Сохранить</button>'
+      +'</div></div>';
+  }).join('');
+  updateStats(); applyFilter();
 }
 
 // ── Actions ───────────────────────────────────────────────
 function setStatus(i, status) {
-  var newStatus = postsData[i].status === status ? '' : status;
-  postsData[i].status = newStatus;
-  var card = document.getElementById('card'+i);
-  card.className = 'card ' + (newStatus||'');
-  card.setAttribute('data-status', newStatus||'');
-  document.getElementById('badge'+i).textContent = newStatus==='ok'?'✅':newStatus==='fix'?'✏️':'';
-  updateStats();
-  applyFilter();
-  saveReview(currentMonth, i, {status: newStatus});
+  postsData[i].status = postsData[i].status===status ? '' : status;
+  var s=postsData[i].status, card=document.getElementById('card'+i);
+  card.className='card '+(s||''); card.setAttribute('data-status',s||'');
+  document.getElementById('badge'+i).textContent=s==='ok'?'✅':s==='fix'?'✏️':'';
+  if (!reviewsData[String(i)]) reviewsData[String(i)]={};
+  reviewsData[String(i)].status=s;
+  reviewsData[String(i)].updated=new Date().toLocaleString('ru',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}).replace(',','');
+  updateStats(); applyFilter();
+  scheduleSave();
 }
 
 function saveComment(i) {
-  postsData[i].comment = document.getElementById('ta'+i).value;
-  saveReview(currentMonth, i, {comment: postsData[i].comment});
-  var btn = document.getElementById('savebtn'+i);
-  btn.textContent = '✅ Сохранено';
-  btn.classList.add('saved');
-  setTimeout(function(){btn.textContent='💾 Сохранить';btn.classList.remove('saved')}, 2000);
+  var val=document.getElementById('ta'+i).value;
+  postsData[i].comment=val;
+  if (!reviewsData[String(i)]) reviewsData[String(i)]={};
+  reviewsData[String(i)].comment=val;
+  reviewsData[String(i)].updated=new Date().toLocaleString('ru',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}).replace(',','');
+  scheduleSave();
+  var btn=document.getElementById('savebtn'+i);
+  btn.textContent='✅ Сохранено'; btn.classList.add('saved');
+  setTimeout(function(){btn.textContent='💾 Сохранить';btn.classList.remove('saved')},2000);
+}
+
+var saveTimeout;
+function scheduleSave() {
+  showToast();
+  clearTimeout(saveTimeout);
+  saveTimeout = setTimeout(function(){ saveReviews(currentMonth); }, 1500);
 }
 
 function updateStats() {
-  var ok=0, fix=0, left=0;
-  postsData.forEach(function(p){
-    if(p.status==='ok') ok++;
-    else if(p.status==='fix') fix++;
-    else left++;
-  });
-  document.getElementById('cnt-ok').textContent = ok;
-  document.getElementById('cnt-fix').textContent = fix;
-  document.getElementById('cnt-left').textContent = left;
-  document.getElementById('copy-all-btn').style.display = fix>0 ? 'block' : 'none';
+  var ok=0,fix=0,left=0;
+  postsData.forEach(function(p){if(p.status==='ok')ok++;else if(p.status==='fix')fix++;else left++});
+  document.getElementById('cnt-ok').textContent=ok;
+  document.getElementById('cnt-fix').textContent=fix;
+  document.getElementById('cnt-left').textContent=left;
+  document.getElementById('copy-all-btn').style.display=fix>0?'block':'none';
 }
 
 function setFilter(f) {
-  currentFilter = f;
-  ['all','ok','fix','none'].forEach(function(b){
-    document.getElementById('f-'+b).classList.toggle('active', b===f);
-  });
-  document.querySelector('.stat.s-ok').classList.toggle('active-filter', f==='ok');
-  document.querySelector('.stat.s-fix').classList.toggle('active-filter', f==='fix');
-  document.querySelector('.stat.s-left').classList.toggle('active-filter', f==='none');
+  currentFilter=f;
+  ['all','ok','fix','none'].forEach(function(b){document.getElementById('f-'+b).classList.toggle('active',b===f)});
+  document.querySelector('.stat.s-ok').classList.toggle('active-filter',f==='ok');
+  document.querySelector('.stat.s-fix').classList.toggle('active-filter',f==='fix');
+  document.querySelector('.stat.s-left').classList.toggle('active-filter',f==='none');
   applyFilter();
 }
 
 function applyFilter() {
-  var visible = 0;
-  postsData.forEach(function(p, i) {
-    var hide = currentFilter !== 'all' && (
-      currentFilter === 'none' ? p.status !== '' : p.status !== currentFilter
-    );
-    document.getElementById('card'+i).classList.toggle('hidden', hide);
-    if (!hide) visible++;
+  var visible=0;
+  postsData.forEach(function(p,i){
+    var hide=currentFilter!=='all'&&(currentFilter==='none'?p.status!=='':p.status!==currentFilter);
+    document.getElementById('card'+i).classList.toggle('hidden',hide);
+    if(!hide)visible++;
   });
-  document.getElementById('empty-msg').style.display = visible===0 ? 'block' : 'none';
+  document.getElementById('empty-msg').style.display=visible===0?'block':'none';
 }
 
 function showToast() {
-  var el = document.getElementById('toast');
+  var el=document.getElementById('toast');
   el.classList.add('show');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(function(){el.classList.remove('show')}, 1800);
+  toastTimer=setTimeout(function(){el.classList.remove('show')},2000);
 }
 
 async function copyPost(i) {
-  var p = postsData[i];
-  var header = [p.date, p.time, p.tag].filter(Boolean).join('  |  ');
-  var bodyEl = document.getElementById('body'+i);
-  var plain = header + '\n\n' + bodyEl.innerText;
-  var htmlC = '<b>'+header+'</b><br><br>'+bodyEl.innerHTML;
-  try {
-    await navigator.clipboard.write([new ClipboardItem({
-      'text/plain': new Blob([plain],{type:'text/plain'}),
-      'text/html': new Blob([htmlC],{type:'text/html'})
-    })]);
-  } catch(e) { await navigator.clipboard.writeText(plain); }
-  var btns = document.querySelectorAll('.btn-copy');
-  btns[i].textContent = '✅ Скопировано';
-  setTimeout(function(){btns[i].textContent='📋 Копировать'}, 2000);
+  var p=postsData[i], header=[p.date,p.time,p.tag].filter(Boolean).join('  |  ');
+  var bodyEl=document.getElementById('body'+i);
+  var plain=header+'\n\n'+bodyEl.innerText, htmlC='<b>'+header+'</b><br><br>'+bodyEl.innerHTML;
+  try { await navigator.clipboard.write([new ClipboardItem({'text/plain':new Blob([plain],{type:'text/plain'}),'text/html':new Blob([htmlC],{type:'text/html'})})]); }
+  catch(e) { await navigator.clipboard.writeText(plain); }
+  var btns=document.querySelectorAll('.btn-copy');
+  btns[i].textContent='✅ Скопировано';
+  setTimeout(function(){btns[i].textContent='📋 Копировать'},2000);
 }
 
 async function copyAllFixes() {
-  var lines = [];
-  postsData.forEach(function(p, i) {
-    if (p.status === 'fix') {
-      lines.push('✏️ ' + [p.date,p.time,p.tag].filter(Boolean).join('  |  '));
-      if (p.comment) lines.push('💬 ' + p.comment);
+  var lines=[];
+  postsData.forEach(function(p,i){
+    if(p.status==='fix'){
+      lines.push('✏️ '+[p.date,p.time,p.tag].filter(Boolean).join('  |  '));
+      if(p.comment) lines.push('💬 '+p.comment);
       lines.push('');
     }
   });
-  try { await navigator.clipboard.writeText(lines.join('\n')); } catch(e) {}
-  var btn = document.getElementById('copy-all-btn');
-  btn.textContent = '✅ Скопировано!';
-  setTimeout(function(){btn.textContent='📋 Скопировать все правки'}, 2000);
+  try { await navigator.clipboard.writeText(lines.join('\n')); } catch(e){}
+  var btn=document.getElementById('copy-all-btn');
+  btn.textContent='✅ Скопировано!';
+  setTimeout(function(){btn.textContent='📋 Скопировать все правки'},2000);
 }
 
-// ── Month switch ──────────────────────────────────────────
+// ── Load month ────────────────────────────────────────────
 function switchMonth(month) {
-  if (month === currentMonth) return;
-  currentMonth = month;
-  currentFilter = 'all';
-  postsData = [];
-  reviewsData = {};
+  if (month===currentMonth) return;
+  currentMonth=month; currentFilter='all'; postsData=[]; reviewsData={};
   renderTabs();
-  document.getElementById('posts').innerHTML = '<div class="loading">Загружаем посты…</div>';
-  ['all','ok','fix','none'].forEach(function(b){document.getElementById('f-'+b).classList.toggle('active',b==='all')});
+  document.getElementById('posts').innerHTML='<div class="loading">Загружаем посты…</div>';
+  document.getElementById('f-all').click();
   loadMonth(month);
 }
 
 function loadMonth(month) {
-  loadPostsMd(month, function(md) {
-    postsData = parseMd(md);
-    loadReviews(month, function(rev) {
-      reviewsData = rev;
-      renderTabs();
-      renderCards();
-    });
+  var rawUrl='https://raw.githubusercontent.com/'+REPO+'/'+BRANCH+'/posts/'+month+'.md?t='+Date.now();
+  Promise.all([
+    fetch(rawUrl).then(function(r){return r.text()}),
+    loadReviews(month)
+  ]).then(function(res) {
+    postsData=parseMd(res[0]);
+    reviewsData=res[1]||{};
+    renderTabs(); renderCards();
   });
 }
 
-// ── Init ──────────────────────────────────────────────────
 renderTabs();
-loadMonth(currentMonth);
+if (checkSetup()) {
+  loadMonth(currentMonth);
+}
 </script>
 </body>
 </html>
