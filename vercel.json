@@ -1,0 +1,11 @@
+{
+  "functions": {
+    "api/reviews.py": {
+      "maxDuration": 15
+    }
+  },
+  "rewrites": [
+    { "source": "/api/reviews", "destination": "/api/reviews" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}

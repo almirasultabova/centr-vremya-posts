@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Посты · @vremya_psy</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f3ece0;color:#1f1d1a;padding:12px;max-width:680px;margin:0 auto}
+.topbar{background:#740298;color:#fff;padding:14px 16px;border-radius:14px;margin-bottom:10px;text-align:center}
+.topbar h1{font-size:17px;font-weight:700}
+.topbar p{font-size:11px;opacity:.75;margin-top:3px}
+.tabs{display:flex;gap:6px;margin-bottom:10px;overflow-x:auto;padding-bottom:2px}
+.tab{flex:1;min-width:100px;padding:10px 8px;background:#fff;border-radius:10px;text-align:center;border:2px solid transparent;font-size:13px;font-weight:600;cursor:pointer;color:#555;transition:all .15s;white-space:nowrap}
+.tab:hover{border-color:#c0a0e0;color:#740298}
+.tab.active{border-color:#740298;color:#740298;background:#f8f0ff}
+.tab-sub{font-size:10px;font-weight:400;color:#aaa;display:block;margin-top:2px}
+.tab.active .tab-sub{color:#b070d0}
+.stats{display:flex;gap:8px;margin-bottom:10px;font-size:13px}
+.stat{flex:1;background:#fff;border-radius:10px;padding:8px 10px;text-align:center;cursor:pointer;user-select:none;transition:box-shadow .15s}
+.stat:hover{box-shadow:0 0 0 2px #740298}
+.stat b{display:block;font-size:22px;font-weight:700}
+.stat.s-ok b{color:#2d7a2d}.stat.s-fix b{color:#c0610a}.stat.s-left b{color:#740298}
+.stat.active-filter{background:#f8f0ff}
+.stat.s-ok.active-filter{box-shadow:0 0 0 2.5px #4caf50}
+.stat.s-fix.active-filter{box-shadow:0 0 0 2.5px #ff9800}
+.stat.s-left.active-filter{box-shadow:0 0 0 2.5px #740298}
+.filters{display:flex;gap:6px;margin-bottom:12px}
+.f-btn{flex:1;padding:9px 4px;border:2px solid transparent;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;background:#fff;color:#555;transition:all .15s}
+.f-btn.active{border-color:#740298;color:#740298;background:#f8f0ff}
+.copy-all-btn{display:none;width:100%;padding:12px;background:#e65c00;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:12px}
+.card{background:#fff;border-radius:14px;margin-bottom:14px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.07);border:2px solid transparent;transition:border-color .2s}
+.card.ok{border-color:#4caf50}.card.fix{border-color:#ff9800}.card.hidden{display:none}
+.card-head{padding:12px 14px 8px;border-bottom:1px solid #f0ebe3;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.status-badge{font-size:16px;min-width:22px}
+.date{font-size:12px;font-weight:700;color:#740298;background:#f3ecf8;padding:2px 9px;border-radius:20px;white-space:nowrap}
+.time{font-size:12px;color:#8c857c}
+.tag{font-size:11px;color:#8c857c;margin-left:auto;text-align:right}
+.updated{font-size:10px;color:#bbb;display:block}
+.card-body{padding:12px 14px;font-size:14px;line-height:1.65}
+.card-body strong{font-weight:700}.card-body em{color:#555;font-style:italic}.card-body a{color:#740298}
+.card-actions{display:flex;gap:6px;padding:10px 14px;border-top:1px solid #f0ebe3;flex-wrap:wrap}
+.card-actions button{flex:1;padding:9px 4px;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;min-width:80px}
+.btn-ok{background:#e8f5e9;color:#2d7a2d}.btn-fix{background:#fff3e0;color:#c0610a}.btn-copy{background:#f3ecf8;color:#740298}
+.card.ok .btn-ok{background:#4caf50;color:#fff}.card.fix .btn-fix{background:#ff9800;color:#fff}
+.comment-wrap{padding:0 14px 12px}
+.comment-wrap textarea{width:100%;border:1.5px solid #e0d8d0;border-radius:8px;padding:8px 10px;font-size:13px;resize:vertical;min-height:60px;color:#1f1d1a;background:#faf8f4}
+.comment-wrap textarea:focus{outline:none;border-color:#740298}
+.save-btn{display:block;width:100%;padding:8px;background:#740298;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;margin-top:6px}
+.save-btn.saved{background:#4caf50}
+.toast{position:fixed;top:14px;right:14px;background:#4caf50;color:#fff;padding:7px 16px;border-radius:20px;font-size:12px;font-weight:600;opacity:0;transition:opacity .25s;pointer-events:none;z-index:999}
+.toast.show{opacity:1}
+.loading{text-align:center;padding:40px;color:#aaa;font-size:14px}
+.empty-msg{text-align:center;color:#aaa;padding:32px;font-size:14px;display:none}
+</style>
+</head>
+<body>
+<div class="toast" id="toast">Сохранено ✓</div>
+<div class="topbar">
+  <h1>Согласование постов · @vremya_psy</h1>
+  <p>Отмечай статус — сохраняется на сервере</p>
+</div>
+<div class="tabs" id="tabs"></div>
+<div class="stats">
+  <div class="stat s-ok" onclick="setFilter('ok')"><b id="cnt-ok">–</b>Ок ✅</div>
+  <div class="stat s-fix" onclick="setFilter('fix')"><b id="cnt-fix">–</b>Правки ✏️</div>
+  <div class="stat s-left" onclick="setFilter('none')"><b id="cnt-left">–</b>Не просм.</div>
+</div>
+<div class="filters">
+  <button class="f-btn active" id="f-all" onclick="setFilter('all')">Все</button>
+  <button class="f-btn" id="f-ok" onclick="setFilter('ok')">✅ Ок</button>
+  <button class="f-btn" id="f-fix" onclick="setFilter('fix')">✏️ Правки</button>
+  <button class="f-btn" id="f-none" onclick="setFilter('none')">👁 Не просмотрено</button>
+</div>
+<button class="copy-all-btn" id="copy-all-btn" onclick="copyAllFixes()">📋 Скопировать все правки</button>
+<div id="posts"><div class="loading">Загружаем посты…</div></div>
+<div class="empty-msg" id="empty-msg">Нет постов с таким статусом</div>
+
+<script>
+var MONTHS = {
+  'may':  { label: 'Май 2026',  sub: '21–31 мая',    file: 'posts/may.md' },
+  'june': { label: 'Июнь 2026', sub: 'весь месяц',   file: 'posts/june.md' }
+};
+var MONTHS_ORDER = ['may','june'];
+var currentMonth = 'june';
+var currentFilter = 'all';
+var postsData = [];
+var reviewsData = {};
+var toastTimer;
+
+// ── Парсинг markdown ──────────────────────────────────────
+function parseMd(text) {
+  var posts = [];
+  var current = null;
+  text.split('\n').forEach(function(line) {
+    var m = line.match(/^## (.+)/);
+    if (m) {
+      if (current) posts.push(current);
+      var parts = m[1].split('|').map(function(s){return s.trim()});
+      current = { date: parts[0]||'', time: parts[1]||'', tag: parts[2]||'', bodyLines: [], status: '', comment: '', updated: '' };
+    } else if (current) {
+      current.bodyLines.push(line);
+    }
+  });
+  if (current) posts.push(current);
+  posts.forEach(function(p) {
+    p.body = p.bodyLines.join('\n').replace(/\n*---\s*$/, '').trim();
+    delete p.bodyLines;
+  });
+  return posts;
+}
+
+function fmtHtml(text) {
+  text = text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  text = text.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
+  text = text.replace(/_(.+?)_/g,'<em>$1</em>');
+  text = text.replace(/\[(.+?)\]\((https?:\/\/[^)]+)\)/g,'<a href="$2" target="_blank">$1</a>');
+  text = text.replace(/\n/g,'<br>');
+  return text;
+}
+
+// ── API ───────────────────────────────────────────────────
+var BASE = window.location.origin;
+
+function loadReviews(month, cb) {
+  fetch(BASE + '/api/reviews?month=' + month)
+    .then(function(r){return r.json()})
+    .then(cb)
+    .catch(function(){cb({})});
+}
+
+function saveReview(month, idx, patch) {
+  var body = Object.assign({ month: month, idx: idx }, patch);
+  fetch(BASE + '/api/reviews', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  }).then(function(){showToast()});
+}
+
+function loadPostsMd(month, cb) {
+  var url = BASE + '/' + MONTHS[month].file + '?t=' + Date.now();
+  fetch(url).then(function(r){return r.text()}).then(cb).catch(function(){cb('')});
+}
+
+// ── Tabs ─────────────────────────────────────────────────
+function renderTabs() {
+  var html = '';
+  MONTHS_ORDER.forEach(function(mk) {
+    var mc = MONTHS[mk];
+    var rev = mk === currentMonth ? reviewsData : {};
+    var active = mk === currentMonth ? ' active' : '';
+    html += '<div class="tab'+active+'" onclick="switchMonth(\''+mk+'\')">'
+          + mc.label
+          + '<span class="tab-sub">'+mc.sub+'</span>'
+          + '</div>';
+  });
+  document.getElementById('tabs').innerHTML = html;
+}
+
+// ── Render ────────────────────────────────────────────────
+function applyReviews() {
+  postsData.forEach(function(p, i) {
+    var r = reviewsData[String(i)] || {};
+    p.status = r.status || '';
+    p.comment = r.comment || '';
+    p.updated = r.updated || '';
+  });
+}
+
+function renderCards() {
+  applyReviews();
+  var html = '';
+  postsData.forEach(function(p, i) {
+    var cls = p.status || '';
+    var badge = p.status === 'ok' ? '✅' : p.status === 'fix' ? '✏️' : '';
+    var upd = p.updated ? '<span class="updated">'+p.updated+'</span>' : '';
+    html += '<div class="card '+cls+'" id="card'+i+'" data-status="'+cls+'">'
+      + '<div class="card-head">'
+      + '<span class="status-badge" id="badge'+i+'">'+badge+'</span>'
+      + '<span class="date">'+fmtHtml(p.date)+'</span>'
+      + '<span class="time">'+fmtHtml(p.time)+'</span>'
+      + '<span class="tag">'+fmtHtml(p.tag)+upd+'</span>'
+      + '</div>'
+      + '<div class="card-body" id="body'+i+'">'+fmtHtml(p.body)+'</div>'
+      + '<div class="card-actions">'
+      + '<button class="btn-ok" onclick="setStatus('+i+',\'ok\')">✅ Всё ок</button>'
+      + '<button class="btn-fix" onclick="setStatus('+i+',\'fix\')">✏️ Нужны правки</button>'
+      + '<button class="btn-copy" onclick="copyPost('+i+')">📋 Копировать</button>'
+      + '</div>'
+      + '<div class="comment-wrap">'
+      + '<textarea id="ta'+i+'" placeholder="Напиши комментарий — что изменить...">'+escHtml(p.comment)+'</textarea>'
+      + '<button class="save-btn" id="savebtn'+i+'" onclick="saveComment('+i+')">💾 Сохранить</button>'
+      + '</div>'
+      + '</div>';
+  });
+  document.getElementById('posts').innerHTML = html;
+  updateStats();
+  applyFilter();
+}
+
+function escHtml(s) {
+  return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Actions ───────────────────────────────────────────────
+function setStatus(i, status) {
+  var newStatus = postsData[i].status === status ? '' : status;
+  postsData[i].status = newStatus;
+  var card = document.getElementById('card'+i);
+  card.className = 'card ' + (newStatus||'');
+  card.setAttribute('data-status', newStatus||'');
+  document.getElementById('badge'+i).textContent = newStatus==='ok'?'✅':newStatus==='fix'?'✏️':'';
+  updateStats();
+  applyFilter();
+  saveReview(currentMonth, i, {status: newStatus});
+}
+
+function saveComment(i) {
+  postsData[i].comment = document.getElementById('ta'+i).value;
+  saveReview(currentMonth, i, {comment: postsData[i].comment});
+  var btn = document.getElementById('savebtn'+i);
+  btn.textContent = '✅ Сохранено';
+  btn.classList.add('saved');
+  setTimeout(function(){btn.textContent='💾 Сохранить';btn.classList.remove('saved')}, 2000);
+}
+
+function updateStats() {
+  var ok=0, fix=0, left=0;
+  postsData.forEach(function(p){
+    if(p.status==='ok') ok++;
+    else if(p.status==='fix') fix++;
+    else left++;
+  });
+  document.getElementById('cnt-ok').textContent = ok;
+  document.getElementById('cnt-fix').textContent = fix;
+  document.getElementById('cnt-left').textContent = left;
+  document.getElementById('copy-all-btn').style.display = fix>0 ? 'block' : 'none';
+}
+
+function setFilter(f) {
+  currentFilter = f;
+  ['all','ok','fix','none'].forEach(function(b){
+    document.getElementById('f-'+b).classList.toggle('active', b===f);
+  });
+  document.querySelector('.stat.s-ok').classList.toggle('active-filter', f==='ok');
+  document.querySelector('.stat.s-fix').classList.toggle('active-filter', f==='fix');
+  document.querySelector('.stat.s-left').classList.toggle('active-filter', f==='none');
+  applyFilter();
+}
+
+function applyFilter() {
+  var visible = 0;
+  postsData.forEach(function(p, i) {
+    var hide = currentFilter !== 'all' && (
+      currentFilter === 'none' ? p.status !== '' : p.status !== currentFilter
+    );
+    document.getElementById('card'+i).classList.toggle('hidden', hide);
+    if (!hide) visible++;
+  });
+  document.getElementById('empty-msg').style.display = visible===0 ? 'block' : 'none';
+}
+
+function showToast() {
+  var el = document.getElementById('toast');
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){el.classList.remove('show')}, 1800);
+}
+
+async function copyPost(i) {
+  var p = postsData[i];
+  var header = [p.date, p.time, p.tag].filter(Boolean).join('  |  ');
+  var bodyEl = document.getElementById('body'+i);
+  var plain = header + '\n\n' + bodyEl.innerText;
+  var htmlC = '<b>'+header+'</b><br><br>'+bodyEl.innerHTML;
+  try {
+    await navigator.clipboard.write([new ClipboardItem({
+      'text/plain': new Blob([plain],{type:'text/plain'}),
+      'text/html': new Blob([htmlC],{type:'text/html'})
+    })]);
+  } catch(e) { await navigator.clipboard.writeText(plain); }
+  var btns = document.querySelectorAll('.btn-copy');
+  btns[i].textContent = '✅ Скопировано';
+  setTimeout(function(){btns[i].textContent='📋 Копировать'}, 2000);
+}
+
+async function copyAllFixes() {
+  var lines = [];
+  postsData.forEach(function(p, i) {
+    if (p.status === 'fix') {
+      lines.push('✏️ ' + [p.date,p.time,p.tag].filter(Boolean).join('  |  '));
+      if (p.comment) lines.push('💬 ' + p.comment);
+      lines.push('');
+    }
+  });
+  try { await navigator.clipboard.writeText(lines.join('\n')); } catch(e) {}
+  var btn = document.getElementById('copy-all-btn');
+  btn.textContent = '✅ Скопировано!';
+  setTimeout(function(){btn.textContent='📋 Скопировать все правки'}, 2000);
+}
+
+// ── Month switch ──────────────────────────────────────────
+function switchMonth(month) {
+  if (month === currentMonth) return;
+  currentMonth = month;
+  currentFilter = 'all';
+  postsData = [];
+  reviewsData = {};
+  renderTabs();
+  document.getElementById('posts').innerHTML = '<div class="loading">Загружаем посты…</div>';
+  ['all','ok','fix','none'].forEach(function(b){document.getElementById('f-'+b).classList.toggle('active',b==='all')});
+  loadMonth(month);
+}
+
+function loadMonth(month) {
+  loadPostsMd(month, function(md) {
+    postsData = parseMd(md);
+    loadReviews(month, function(rev) {
+      reviewsData = rev;
+      renderTabs();
+      renderCards();
+    });
+  });
+}
+
+// ── Init ──────────────────────────────────────────────────
+renderTabs();
+loadMonth(currentMonth);
+</script>
+</body>
+</html>
