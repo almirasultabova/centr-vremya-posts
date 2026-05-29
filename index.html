@@ -53,28 +53,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .loading{text-align:center;padding:40px;color:#aaa;font-size:14px}
 .empty-msg{text-align:center;color:#aaa;padding:32px;font-size:14px;display:none}
 
-.setup-overlay{position:fixed;inset:0;background:#f3ece0;z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px}
-.setup-box{background:#fff;border-radius:18px;padding:28px 24px;max-width:360px;width:100%;box-shadow:0 4px 24px rgba(0,0,0,.12)}
-.setup-box h2{font-size:18px;font-weight:700;color:#740298;margin-bottom:8px}
-.setup-box p{font-size:13px;color:#666;line-height:1.5;margin-bottom:18px}
-.setup-box input{width:100%;border:1.5px solid #e0d8d0;border-radius:8px;padding:10px 12px;font-size:13px;margin-bottom:12px}
-.setup-box input:focus{outline:none;border-color:#740298}
-.setup-box button{width:100%;padding:12px;background:#740298;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer}
-.setup-box .hint{font-size:11px;color:#aaa;margin-top:10px;text-align:center}
-
 </style>
 </head>
 <body>
 
-<div class="setup-overlay" id="setup-overlay" style="display:none">
-  <div class="setup-box">
-    <h2>Добро пожаловать</h2>
-    <p>Для сохранения статусов постов нужен GitHub токен. Вводится один раз — запомнится в браузере.</p>
-    <input type="password" id="token-input" placeholder="Вставь токен сюда" />
-    <button onclick="saveToken()">Сохранить и войти</button>
-    <div class="hint">Токен можно получить у агента ВРЕМЯ</div>
-  </div>
-</div>
 
 <div class="toast" id="toast">Сохранено ✓</div>
 <div class="topbar">
@@ -98,7 +80,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div class="empty-msg" id="empty-msg">Нет постов с таким статусом</div>
 
 <script>
-var GH_TOKEN = localStorage.getItem('vp_gh_token') || '';
 var REPO = 'almirasultabova/centr-vremya-posts';
 var BRANCH = 'main';
 
@@ -111,40 +92,26 @@ var currentMonth = 'june';
 var currentFilter = 'all';
 var postsData = [];
 var reviewsData = {};
-var reviewsSha = {};
 var toastTimer;
 var saveQueue = {};
 
-// ── GitHub API ────────────────────────────────────────────
-function ghGet(path) {
-  return fetch('https://api.github.com/repos/'+REPO+'/contents/'+path+'?ref='+BRANCH+'&t='+Date.now(), {
-    headers: { 'Authorization': 'token '+GH_TOKEN, 'Accept': 'application/vnd.github.v3+json' }
-  }).then(function(r){ return r.ok ? r.json() : null });
-}
-
-function ghPut(path, contentStr, sha) {
-  var body = { message: 'update '+path, content: btoa(unescape(encodeURIComponent(contentStr))), branch: BRANCH };
-  if (sha) body.sha = sha;
-  return fetch('https://api.github.com/repos/'+REPO+'/contents/'+path, {
-    method: 'PUT',
-    headers: { 'Authorization': 'token '+GH_TOKEN, 'Content-Type': 'application/json', 'Accept': 'application/vnd.github.v3+json' },
-    body: JSON.stringify(body)
-  }).then(function(r){ return r.json() });
-}
-
+// ── API (сервер хранит токен) ─────────────────────────────
 function loadReviews(month) {
-  return ghGet('reviews/'+month+'.json').then(function(d) {
-    if (!d) return {};
-    reviewsSha[month] = d.sha;
-    return JSON.parse(decodeURIComponent(escape(atob(d.content.replace(/\n/g,'')))));
-  });
+  return fetch('/api/reviews?month='+month+'&t='+Date.now())
+    .then(function(r){ return r.ok ? r.json() : {}; })
+    .catch(function(){ return {}; });
 }
 
 function saveReviews(month) {
-  var content = JSON.stringify(reviewsData, null, 2);
-  ghPut('reviews/'+month+'.json', content, reviewsSha[month]).then(function(r) {
-    if (r && r.content) reviewsSha[month] = r.content.sha;
+  var entries = Object.keys(reviewsData).map(function(idx) {
+    var r = reviewsData[idx];
+    return fetch('/api/reviews', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ month: month, idx: Number(idx), status: r.status||'', comment: r.comment||'' })
+    });
   });
+  return Promise.all(entries);
 }
 
 // ── Парсинг markdown ──────────────────────────────────────
@@ -242,11 +209,9 @@ function saveComment(i) {
 
 var saveTimeout;
 function scheduleSave() {
-  requireToken(function() {
-    showToast();
-    clearTimeout(saveTimeout);
-    saveTimeout = setTimeout(function(){ saveReviews(currentMonth); }, 1500);
-  });
+  showToast();
+  clearTimeout(saveTimeout);
+  saveTimeout = setTimeout(function(){ saveReviews(currentMonth); }, 1500);
 }
 
 function updateStats() {
@@ -330,25 +295,6 @@ function loadMonth(month) {
     reviewsData=res[1]||{};
     renderTabs(); renderCards();
   });
-}
-
-function checkSetup() {
-  return true;
-}
-
-function requireToken(callback) {
-  if (GH_TOKEN) { callback(); return; }
-  document.getElementById('setup-overlay').style.display = 'flex';
-  window._pendingTokenCallback = callback;
-}
-
-function saveToken() {
-  var val = document.getElementById('token-input').value.trim();
-  if (!val) return;
-  localStorage.setItem('vp_gh_token', val);
-  GH_TOKEN = val;
-  document.getElementById('setup-overlay').style.display = 'none';
-  if (window._pendingTokenCallback) { window._pendingTokenCallback(); window._pendingTokenCallback = null; }
 }
 
 renderTabs();
