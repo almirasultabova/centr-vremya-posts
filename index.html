@@ -242,9 +242,11 @@ function saveComment(i) {
 
 var saveTimeout;
 function scheduleSave() {
-  showToast();
-  clearTimeout(saveTimeout);
-  saveTimeout = setTimeout(function(){ saveReviews(currentMonth); }, 1500);
+  requireToken(function() {
+    showToast();
+    clearTimeout(saveTimeout);
+    saveTimeout = setTimeout(function(){ saveReviews(currentMonth); }, 1500);
+  });
 }
 
 function updateStats() {
@@ -331,11 +333,13 @@ function loadMonth(month) {
 }
 
 function checkSetup() {
-  if (!GH_TOKEN) {
-    document.getElementById('setup-overlay').style.display = 'flex';
-    return false;
-  }
   return true;
+}
+
+function requireToken(callback) {
+  if (GH_TOKEN) { callback(); return; }
+  document.getElementById('setup-overlay').style.display = 'flex';
+  window._pendingTokenCallback = callback;
 }
 
 function saveToken() {
@@ -344,13 +348,11 @@ function saveToken() {
   localStorage.setItem('vp_gh_token', val);
   GH_TOKEN = val;
   document.getElementById('setup-overlay').style.display = 'none';
-  loadMonth(currentMonth);
+  if (window._pendingTokenCallback) { window._pendingTokenCallback(); window._pendingTokenCallback = null; }
 }
 
 renderTabs();
-if (checkSetup()) {
-  loadMonth(currentMonth);
-}
+loadMonth(currentMonth);
 </script>
 </body>
 </html>
