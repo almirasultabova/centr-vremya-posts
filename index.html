@@ -103,15 +103,11 @@ function loadReviews(month) {
 }
 
 function saveReviews(month) {
-  var entries = Object.keys(reviewsData).map(function(idx) {
-    var r = reviewsData[idx];
-    return fetch('/api/reviews', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ month: month, idx: Number(idx), status: r.status||'', comment: r.comment||'' })
-    });
-  });
-  return Promise.all(entries);
+  return fetch('/api/reviews', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ month: month, reviews: reviewsData })
+  }).catch(function(e){ console.error('save error', e); });
 }
 
 // ── Парсинг markdown ──────────────────────────────────────
