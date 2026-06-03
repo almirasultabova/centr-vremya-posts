@@ -4,6 +4,21 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Посты · @vremya_psy</title>
+<script>
+(function(){
+  var k = sessionStorage.getItem('vp_auth');
+  if(k !== '12041971'){
+    var p = prompt('Введите пароль:');
+    if(p !== '12041971'){
+      document.addEventListener('DOMContentLoaded', function(){
+        document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;font-size:16px;color:#555;">Неверный пароль</div>';
+      });
+    } else {
+      sessionStorage.setItem('vp_auth','12041971');
+    }
+  }
+})();
+</script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f3ece0;color:#1f1d1a;padding:12px;max-width:680px;margin:0 auto}
