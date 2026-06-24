@@ -35,17 +35,18 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .stat{flex:1;background:#fff;border-radius:10px;padding:8px 10px;text-align:center;cursor:pointer;user-select:none;transition:box-shadow .15s}
 .stat:hover{box-shadow:0 0 0 2px #740298}
 .stat b{display:block;font-size:22px;font-weight:700}
-.stat.s-ok b{color:#2d7a2d}.stat.s-fix b{color:#c0610a}.stat.s-left b{color:#740298}
+.stat.s-ok b{color:#2d7a2d}.stat.s-fix b{color:#c0610a}.stat.s-left b{color:#740298}.stat.s-del b{color:#8c3f36}
 .stat.active-filter{background:#f8f0ff}
 .stat.s-ok.active-filter{box-shadow:0 0 0 2.5px #4caf50}
 .stat.s-fix.active-filter{box-shadow:0 0 0 2.5px #ff9800}
 .stat.s-left.active-filter{box-shadow:0 0 0 2.5px #740298}
+.stat.s-del.active-filter{box-shadow:0 0 0 2.5px #8c3f36}
 .filters{display:flex;gap:6px;margin-bottom:12px}
 .f-btn{flex:1;padding:9px 4px;border:2px solid transparent;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;background:#fff;color:#555;transition:all .15s}
 .f-btn.active{border-color:#740298;color:#740298;background:#f8f0ff}
 .copy-all-btn{display:none;width:100%;padding:12px;background:#e65c00;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:12px}
 .card{background:#fff;border-radius:14px;margin-bottom:14px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.07);border:2px solid transparent;transition:border-color .2s}
-.card.ok{border-color:#4caf50}.card.fix{border-color:#ff9800}.card.hidden{display:none}
+.card.ok{border-color:#4caf50}.card.fix{border-color:#ff9800}.card.hidden{display:none}.card.deleted{border-color:#8c3f36;background:#fff8f6}.card.deleted .card-head{background:#fff1ee}.card.deleted .card-body,.card.deleted .comment-wrap{opacity:.72}
 .card-head{padding:12px 14px 8px;border-bottom:1px solid #f0ebe3;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .status-badge{font-size:16px;min-width:22px}
 .date{font-size:12px;font-weight:700;color:#740298;background:#f3ecf8;padding:2px 9px;border-radius:20px;white-space:nowrap}
@@ -56,7 +57,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .card-body strong{font-weight:700}.card-body em{color:#555;font-style:italic}.card-body a{color:#740298}
 .card-actions{display:flex;gap:6px;padding:10px 14px;border-top:1px solid #f0ebe3;flex-wrap:wrap}
 .card-actions button{flex:1;padding:9px 4px;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;min-width:80px}
-.btn-ok{background:#e8f5e9;color:#2d7a2d}.btn-fix{background:#fff3e0;color:#c0610a}.btn-copy{background:#f3ecf8;color:#740298}
+.btn-ok{background:#e8f5e9;color:#2d7a2d}.btn-fix{background:#fff3e0;color:#c0610a}.btn-copy{background:#f3ecf8;color:#740298}.btn-delete{background:#fdecea;color:#8c3f36}.btn-restore{background:#e8f5e9;color:#2d7a2d}.card:not(.deleted) .btn-restore{display:none}.card.deleted .btn-delete,.card.deleted .btn-ok,.card.deleted .btn-fix{display:none}
 .card.ok .btn-ok{background:#4caf50;color:#fff}.card.fix .btn-fix{background:#ff9800;color:#fff}
 .comment-wrap{padding:0 14px 12px}
 .comment-wrap textarea{width:100%;border:1.5px solid #e0d8d0;border-radius:8px;padding:8px 10px;font-size:13px;resize:vertical;min-height:60px;background:#faf8f4}
@@ -83,12 +84,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   <div class="stat s-ok" onclick="setFilter('ok')"><b id="cnt-ok">–</b>Ок ✅</div>
   <div class="stat s-fix" onclick="setFilter('fix')"><b id="cnt-fix">–</b>Правки ✏️</div>
   <div class="stat s-left" onclick="setFilter('none')"><b id="cnt-left">–</b>Не просм.</div>
+  <div class="stat s-del" onclick="setFilter('deleted')"><b id="cnt-del">–</b>Удалено</div>
 </div>
 <div class="filters">
   <button class="f-btn active" id="f-all" onclick="setFilter('all')">Все</button>
   <button class="f-btn" id="f-ok" onclick="setFilter('ok')">✅ Ок</button>
   <button class="f-btn" id="f-fix" onclick="setFilter('fix')">✏️ Правки</button>
   <button class="f-btn" id="f-none" onclick="setFilter('none')">👁 Не просмотрено</button>
+  <button class="f-btn" id="f-deleted" onclick="setFilter('deleted')">🗑 Удалённые</button>
 </div>
 <button class="copy-all-btn" id="copy-all-btn" onclick="copyAllFixes()">📋 Скопировать все правки</button>
 <div id="posts"><div class="loading">Загружаем посты…</div></div>
@@ -164,16 +167,16 @@ function renderTabs() {
 function applyReviews() {
   postsData.forEach(function(p,i) {
     var r = reviewsData[String(i)]||{};
-    p.status=r.status||''; p.comment=r.comment||''; p.updated=r.updated||'';
+    p.status=r.status||''; p.comment=r.comment||''; p.updated=r.updated||''; p.deleted=!!r.deleted; p.deletedAt=r.deletedAt||'';
   });
 }
 
 function renderCards() {
   applyReviews();
   document.getElementById('posts').innerHTML = postsData.map(function(p,i) {
-    var cls=p.status||'', badge=p.status==='ok'?'✅':p.status==='fix'?'✏️':'';
+    var cls=(p.status||'')+(p.deleted?' deleted':''), badge=p.deleted?'🗑️':p.status==='ok'?'✅':p.status==='fix'?'✏️':'';
     var upd=p.updated?'<span class="updated">'+p.updated+'</span>':'';
-    return '<div class="card '+cls+'" id="card'+i+'" data-status="'+cls+'">'
+    return '<div class="card '+cls+'" id="card'+i+'" data-status="'+(p.status||'')+'" data-deleted="'+(p.deleted?'true':'false')+'">'
       +'<div class="card-head">'
       +'<span class="status-badge" id="badge'+i+'">'+badge+'</span>'
       +'<span class="date">'+fmtHtml(p.date)+'</span>'
@@ -185,6 +188,8 @@ function renderCards() {
       +'<button class="btn-ok" onclick="setStatus('+i+',\'ok\')">✅ Всё ок</button>'
       +'<button class="btn-fix" onclick="setStatus('+i+',\'fix\')">✏️ Нужны правки</button>'
       +'<button class="btn-copy" onclick="copyPost('+i+')">📋 Копировать</button>'
+      +'<button class="btn-delete" onclick="deletePost('+i+')">🗑 Удалить</button>'
+      +'<button class="btn-restore" onclick="restorePost('+i+')">↩️ Вернуть</button>'
       +'</div>'
       +'<div class="comment-wrap">'
       +'<textarea id="ta'+i+'" placeholder="Напиши комментарий — что изменить...">'+esc(p.comment)+'</textarea>'
@@ -196,12 +201,13 @@ function renderCards() {
 
 // ── Actions ───────────────────────────────────────────────
 function setStatus(i, status) {
+  if (postsData[i].deleted) restorePost(i, false);
   postsData[i].status = postsData[i].status===status ? '' : status;
   var s=postsData[i].status, card=document.getElementById('card'+i);
-  card.className='card '+(s||''); card.setAttribute('data-status',s||'');
-  document.getElementById('badge'+i).textContent=s==='ok'?'✅':s==='fix'?'✏️':'';
+  card.className='card '+(s||'')+(postsData[i].deleted?' deleted':''); card.setAttribute('data-status',s||''); card.setAttribute('data-deleted',postsData[i].deleted?'true':'false');
+  document.getElementById('badge'+i).textContent=postsData[i].deleted?'🗑️':s==='ok'?'✅':s==='fix'?'✏️':'';
   if (!reviewsData[String(i)]) reviewsData[String(i)]={};
-  reviewsData[String(i)].status=s;
+  reviewsData[String(i)].status=s; reviewsData[String(i)].deleted=!!postsData[i].deleted; reviewsData[String(i)].deletedAt=postsData[i].deletedAt||'';
   reviewsData[String(i)].updated=new Date().toLocaleString('ru',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}).replace(',','');
   updateStats(); applyFilter();
   scheduleSave();
@@ -219,6 +225,21 @@ function saveComment(i) {
   setTimeout(function(){btn.textContent='💾 Сохранить';btn.classList.remove('saved')},2000);
 }
 
+function markReviewDeleted(i, deleted) {
+  postsData[i].deleted = deleted;
+  postsData[i].deletedAt = deleted ? new Date().toISOString() : '';
+  if (!reviewsData[String(i)]) reviewsData[String(i)]={};
+  reviewsData[String(i)].deleted = deleted;
+  reviewsData[String(i)].deletedAt = postsData[i].deletedAt;
+  reviewsData[String(i)].status = postsData[i].status || '';
+  reviewsData[String(i)].comment = postsData[i].comment || '';
+  reviewsData[String(i)].updated = new Date().toLocaleString('ru',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}).replace(',','');
+  renderCards();
+  scheduleSave();
+}
+
+function deletePost(i) { markReviewDeleted(i, true); }
+function restorePost(i, showAll) { markReviewDeleted(i, false); if(showAll!==false) setFilter('all'); }
 var saveTimeout;
 function scheduleSave() {
   showToast();
@@ -227,27 +248,29 @@ function scheduleSave() {
 }
 
 function updateStats() {
-  var ok=0,fix=0,left=0;
-  postsData.forEach(function(p){if(p.status==='ok')ok++;else if(p.status==='fix')fix++;else left++});
+  var ok=0,fix=0,left=0,del=0;
+  postsData.forEach(function(p){if(p.deleted)del++;else if(p.status==='ok')ok++;else if(p.status==='fix')fix++;else left++});
   document.getElementById('cnt-ok').textContent=ok;
   document.getElementById('cnt-fix').textContent=fix;
   document.getElementById('cnt-left').textContent=left;
+  document.getElementById('cnt-del').textContent=del;
   document.getElementById('copy-all-btn').style.display=fix>0?'block':'none';
 }
 
 function setFilter(f) {
   currentFilter=f;
-  ['all','ok','fix','none'].forEach(function(b){document.getElementById('f-'+b).classList.toggle('active',b===f)});
+  ['all','ok','fix','none','deleted'].forEach(function(b){document.getElementById('f-'+b).classList.toggle('active',b===f)});
   document.querySelector('.stat.s-ok').classList.toggle('active-filter',f==='ok');
   document.querySelector('.stat.s-fix').classList.toggle('active-filter',f==='fix');
   document.querySelector('.stat.s-left').classList.toggle('active-filter',f==='none');
+  document.querySelector('.stat.s-del').classList.toggle('active-filter',f==='deleted');
   applyFilter();
 }
 
 function applyFilter() {
   var visible=0;
   postsData.forEach(function(p,i){
-    var hide=currentFilter!=='all'&&(currentFilter==='none'?p.status!=='':p.status!==currentFilter);
+    var hide=currentFilter==='deleted'?!p.deleted:(p.deleted||currentFilter!=='all'&&(currentFilter==='none'?p.status!=='':p.status!==currentFilter));
     document.getElementById('card'+i).classList.toggle('hidden',hide);
     if(!hide)visible++;
   });
@@ -267,15 +290,14 @@ async function copyPost(i) {
   var plain=header+'\n\n'+bodyEl.innerText, htmlC='<b>'+header+'</b><br><br>'+bodyEl.innerHTML;
   try { await navigator.clipboard.write([new ClipboardItem({'text/plain':new Blob([plain],{type:'text/plain'}),'text/html':new Blob([htmlC],{type:'text/html'})})]); }
   catch(e) { await navigator.clipboard.writeText(plain); }
-  var btns=document.querySelectorAll('.btn-copy');
-  btns[i].textContent='✅ Скопировано';
-  setTimeout(function(){btns[i].textContent='📋 Копировать'},2000);
+  var btn=document.querySelector('#card'+i+' .btn-copy');
+  if(btn){btn.textContent='✅ Скопировано'; setTimeout(function(){btn.textContent='📋 Копировать'},2000);}
 }
 
 async function copyAllFixes() {
   var lines=[];
   postsData.forEach(function(p,i){
-    if(p.status==='fix'){
+    if(!p.deleted&&p.status==='fix'){
       lines.push('✏️ '+[p.date,p.time,p.tag].filter(Boolean).join('  |  '));
       if(p.comment) lines.push('💬 '+p.comment);
       lines.push('');
