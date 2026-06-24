@@ -256,7 +256,10 @@
   },
   "55": {
     "status": "fix",
-    "updated": "17.06 17:38"
+    "updated": "25.06 00:21",
+    "deleted": true,
+    "deletedAt": "2026-06-24T21:21:13.494Z",
+    "comment": ""
   },
   "56": {
     "deleted": true,
